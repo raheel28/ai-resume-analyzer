@@ -1,0 +1,23 @@
+Guard eval (holdout set) on 24 labelled rewrites
+  Invented facts caught (recall): 100%  (14/14)
+  Precision of rejections:        93%
+  Honest rewrites wrongly blocked: 10%  (1/10)
+  By category:
+    changed_number             1/1
+    existing_tech              1/1
+    generic_words              1/2
+    hyphen_compound            2/2
+    invented_leadership        2/2
+    invented_number            1/1
+    invented_org               1/1
+    invented_outcome           2/2
+    invented_tech              1/1
+    invented_tech_lowercase    2/2
+    placeholder                2/2
+    reorder                    1/1
+    scale_claim                2/2
+    spelled_number             2/2
+    stronger_verb              2/2
+  Errors:
+    [h06] expected accept, guard said: technology not in your resume: Data structures & algorithms
+        Created an intuitive, interactive JavaScript visualizer for maze-solving algorithms

@@ -1,0 +1,20 @@
+Guard eval (holdout set) on 24 labelled rewrites
+  Invented facts caught (recall): 29%  (4/14)
+  Precision of rejections:        80%
+  Honest rewrites wrongly blocked: 10%  (1/10)
+  By category:
+    changed_number             1/1
+    existing_tech              1/1
+    generic_words              2/2
+    hyphen_compound            2/2
+    invented_leadership        0/2
+    invented_number            1/1
+    invented_org               1/1
+    invented_outcome           0/2
+    invented_tech              1/1
+    invented_tech_lowercase    0/2
+    placeholder                1/2
+    reorder                    1/1
+    scale_claim                0/2
+    spelled_number             0/2
+    stronger_verb              2/2

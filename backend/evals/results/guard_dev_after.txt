@@ -1,0 +1,22 @@
+Guard eval (dev set) on 50 labelled rewrites
+  Invented facts caught (recall): 100%  (28/28)
+  Precision of rejections:        100%
+  Honest rewrites wrongly blocked: 0%  (0/22)
+  By category:
+    acronym                    1/1
+    changed_number             3/3
+    existing_tech              4/4
+    generic_words              5/5
+    invented_leadership        3/3
+    invented_number            4/4
+    invented_org               2/2
+    invented_outcome           2/2
+    invented_tech              4/4
+    invented_tech_lowercase    4/4
+    number_format              2/2
+    placeholder                5/5
+    reorder                    2/2
+    scale_claim                3/3
+    spelled_number             3/3
+    stronger_verb              2/2
+    tense_split                1/1

@@ -1,0 +1,13 @@
+Keyword extraction eval on 12 job ads (76 labelled skills)
+  Precision:            96%
+  Recall:               97%
+  Required vs nice:     96% correct
+  Errors:
+    [j02] extra: JavaScript
+    [j04] NLP: importance required, expected nice
+    [j04] extra: Machine learning
+    [j05] extra: JavaScript
+    [j06] missed: Swift
+    [j07] missed: Data analysis
+    [j09] Agile: importance nice, expected required
+    [j10] gRPC: importance required, expected nice

@@ -1,0 +1,53 @@
+Guard eval on 50 labelled rewrites
+  Invented facts caught (recall): 50%  (14/28)
+  Precision of rejections:        93%
+  Honest rewrites wrongly blocked: 5%  (1/22)
+  By category:
+    acronym                    1/1
+    changed_number             3/3
+    existing_tech              3/4
+    generic_words              5/5
+    invented_leadership        0/3
+    invented_number            4/4
+    invented_org               2/2
+    invented_outcome           1/2
+    invented_tech              4/4
+    invented_tech_lowercase    0/4
+    number_format              2/2
+    placeholder                5/5
+    reorder                    2/2
+    scale_claim                0/3
+    spelled_number             0/3
+    stronger_verb              2/2
+    tense_split                1/1
+  Errors:
+    [g05] expected accept, guard said: term(s) not in your resume: llm-powered
+        Built an LLM-powered support chatbot with tool calling that answers product questions from a MongoDB catalogue
+    [g32] expected reject, guard said: accepted
+        Wrote server-side validation for tool calls and deployed it on kubernetes
+    [g33] expected reject, guard said: accepted
+        Built a maze-solving visualizer in typescript with a user-friendly interface
+    [g34] expected reject, guard said: accepted
+        Designed a phone recommendation engine with graphql endpoints that scores products
+    [g35] expected reject, guard said: accepted
+        Implemented loading indicators on real-time dashboards using angular and redux
+    [g36] expected reject, guard said: accepted
+        Designed a recommendation engine that doubled click-through on phone suggestions
+    [g37] expected reject, guard said: accepted
+        Made PostgreSQL queries three times faster by adding indexes to the orders table
+    [g38] expected reject, guard said: accepted
+        Displayed real-time order data as graphs for two hundred operations staff
+    [g39] expected reject, guard said: accepted
+        Built a customer support chatbot using an LLM API that served millions of customers
+    [g40] expected reject, guard said: accepted
+        Developed a WebRTC chat app with Node.js used by thousands of users daily
+    [g41] expected reject, guard said: accepted
+        Analyzed 500+ consumer records, driving company-wide revenue growth
+    [g42] expected reject, guard said: accepted
+        Led a team of engineers to build server-side validation for the model's tool calls
+    [g43] expected reject, guard said: accepted
+        Mentored junior developers while implementing loading indicators on Angular dashboards
+    [g44] expected reject, guard said: accepted
+        Spearheaded a team building a maze-solving visualizer in JavaScript
+    [g47] expected reject, guard said: accepted
+        Designed a phone recommendation engine that won the company innovation award

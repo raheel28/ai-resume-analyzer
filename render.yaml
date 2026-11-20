@@ -1,0 +1,25 @@
+# Render blueprint for the API. Set GEMINI_API_KEY in the Render dashboard (never commit it).
+services:
+  - type: web
+    name: ai-resume-analyzer-api
+    runtime: docker
+    rootDir: backend
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: LLM_MODEL
+        value: gemini-3.8-flash
+      - key: LLM_FALLBACK_MODELS
+        value: gemini-3.5-flash,gemini-3.1-flash-lite
+      - key: LLM_TIMEOUT_S
+        value: "25"
+      - key: TRUST_PROXY        # Render sits behind a proxy; needed to rate-limit by real IP
+        value: "1"
+      - key: AI_RATE_LIMIT      # per visitor; protects your Gemini quota
+        value: 10/hour
+      - key: BASIC_RATE_LIMIT
+        value: 60/minute
+      - key: CORS_ORIGINS
+        value: https://your-frontend.vercel.app   # replace after deploying the frontend

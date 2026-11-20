@@ -1,0 +1,26 @@
+Alex Murphy
+Dublin, Ireland | alex.murphy@example.com | +353 87 000 0000 | github.com/alexm
+
+EXPERIENCE
+Software Engineering Intern, Brightline Labs — May 2025 - Dec 2025
+• Built a customer support chatbot using an LLM API with tool calling, answering product questions from a MongoDB catalogue
+• Wrote server-side validation for the model's tool calls to block malformed queries
+• Designed a phone recommendation engine that scores products against user preferences
+• Improved PostgreSQL query performance by about 15% by adding indexes to the orders table
+
+Software Developer Intern, Northgate Systems — Jan 2024 - Apr 2024
+• Implemented loading indicators on real-time dashboards using Angular
+• Displayed real-time order data as graphs using Java and Angular for the operations team
+• Collected and analyzed 500+ consumer data records for product prioritization
+
+PROJECTS
+• Developed a peer-to-peer chat app with WebRTC and Node.js supporting 20+ concurrent connections
+• Built a maze-solving visualizer in JavaScript with a user-friendly interface
+• Trained a semantic segmentation model that improved mIoU by 9.7% over the baseline
+
+EDUCATION
+MSc Computer Science, University College Dublin — 2026 - 2027
+B.Tech Computer Science and Engineering — 2022 - 2026
+
+SKILLS
+C++, Python, JavaScript, Java, Node.js, Express, React, Angular, MongoDB, PostgreSQL, Git, Linux, Docker

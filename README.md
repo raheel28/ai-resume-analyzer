@@ -140,13 +140,18 @@ median/p90 latency, fallback rate and guard rejection rate on real model output.
   Uploads are capped at 5 MB (resume) and 2 MB (job description).
 - **Cold starts:** if the API takes more than 2.5s to answer (a free Render instance
   waking up), the page shows a "Waking up the server…" banner with a timer.
-- **API (Render):** `render.yaml` builds `backend/Dockerfile`. Set `GEMINI_API_KEY` in the
-  Render dashboard, and set `CORS_ORIGINS` to the frontend URL. Note: Render's free disk
-  is wiped on redeploys, so download `data/metrics.jsonl` before redeploying if you want
-  to keep it.
-- **Frontend (Vercel):** import the `frontend/` folder and set `VITE_API_BASE` to the API URL.
+- **One service (Render):** the root `Dockerfile` builds the React site, then runs
+  FastAPI, which serves the API at `/api/...` and the site at `/`. That means one URL, no
+  CORS setup and one deploy. `render.yaml` is a Blueprint for it: on Render choose
+  **New → Blueprint**, pick the repo, and paste `GEMINI_API_KEY` when asked. Every push to
+  `main` redeploys. The free plan sleeps after 15 idle minutes (about a minute to wake);
+  the Starter plan stays awake. Render's free disk is wiped on redeploys, so download
+  `data/metrics.jsonl` first if you want to keep it.
+- *(Optional split deploy: `backend/Dockerfile` for the API only, plus `frontend/` on
+  Vercel with `VITE_API_BASE` set to the API URL and `CORS_ORIGINS` set on the API.)*
 - **CI:** `.github/workflows/ci.yml` runs the tests (including the eval thresholds, which
-  fail the build if guard recall or keyword precision/recall drop) and builds the frontend.
+  fail the build if guard recall or keyword precision/recall drop), builds the frontend,
+  and builds and smoke-tests the single-service Docker image that Render deploys.
 
 ## Exports
 

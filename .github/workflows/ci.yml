@@ -40,3 +40,18 @@ jobs:
           node-version: "20"
       - run: npm install
       - run: npm run build
+
+  # Builds the same single-service image Render deploys, so a broken
+  # Dockerfile shows up here instead of as a failed deploy.
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t ai-resume-analyzer .
+      - name: Smoke test (site + API from one container)
+        run: |
+          docker run -d -p 8000:8000 --name app ai-resume-analyzer
+          for i in $(seq 1 30); do curl -sf localhost:8000/api/health && break; sleep 1; done
+          curl -sf localhost:8000/api/health | grep '"status":"ok"'
+          curl -sf localhost:8000/ | grep -q '<div id="root">'
+          echo "API and frontend both served"

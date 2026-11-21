@@ -238,3 +238,14 @@ async def apply_changes(
             **({"X-Pages": str(pages)} if pages else {}),
         },
     )
+
+
+# ---------------------------------------------------------------- frontend
+# In the single-service deploy (root Dockerfile) the built React app is copied
+# to STATIC_DIR and served from "/", so one URL serves both site and API.
+# Mounted last, so every /api/... route above takes priority.
+_static_dir = Path(os.getenv("STATIC_DIR", Path(__file__).resolve().parent.parent / "static"))
+if _static_dir.is_dir():
+    from fastapi.staticfiles import StaticFiles
+
+    app.mount("/", StaticFiles(directory=_static_dir, html=True), name="frontend")

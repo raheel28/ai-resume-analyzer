@@ -1,10 +1,12 @@
-# Render blueprint for the API. Set GEMINI_API_KEY in the Render dashboard (never commit it).
+# Render blueprint: ONE web service that serves both the React site and the API.
+# Set GEMINI_API_KEY in the Render dashboard when asked (never commit it).
 services:
   - type: web
-    name: ai-resume-analyzer-api
+    name: ai-resume-analyzer
     runtime: docker
-    rootDir: backend
-    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free            # free sleeps after 15 min idle; "starter" ($7/mo) stays awake
     healthCheckPath: /api/health
     envVars:
       - key: GEMINI_API_KEY
@@ -21,5 +23,3 @@ services:
         value: 10/hour
       - key: BASIC_RATE_LIMIT
         value: 60/minute
-      - key: CORS_ORIGINS
-        value: https://your-frontend.vercel.app   # replace after deploying the frontend

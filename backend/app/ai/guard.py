@@ -40,6 +40,9 @@ CLAIM_PATTERNS = {
         r"\b(?:led|lead|leading|managed|managing|mentored|mentoring|supervised|supervising|"
         r"spearheaded|headed|directed|oversaw|coached|coaching|team\s+of|cross[-\s]functional\s+team)\b",
         re.I),
+    "invented scale": re.compile(
+        r"\b(?:high[-\s]volume|high[-\s]traffic|high[-\s]throughput|large[-\s]scale|at\s+scale|"
+        r"massive|huge|enterprise[-\s]grade|mission[-\s]critical|heavy[-\s]load)\b", re.I),
     "invented recognition": re.compile(
         r"\b(?:awards?|awarded|won|winning|winner|first\s+place|prize|published|publication|"
         r"patents?|promoted|promotion|recogni[sz]ed|featured|acclaimed|hackathon)\b", re.I),
@@ -79,6 +82,23 @@ def _named_terms(text: str) -> set[str]:
     return terms
 
 
+HEDGE = r"(?:about|approximately|approx\.?|around|roughly|nearly|almost|over|more\s+than|up\s+to|~)"
+HEDGED_NUMBER_RE = re.compile(rf"(?:{HEDGE}\s*(\d+(?:[.,]\d+)*))|(\d+(?:[.,]\d+)*)\+", re.I)
+
+
+def _dropped_hedges(original: str, suggested: str) -> list[str]:
+    """Numbers that were approximate ("about 15%", "20+") in the original but
+    are stated as exact in the rewrite. Same digits, bigger claim."""
+    dropped = []
+    for m in HEDGED_NUMBER_RE.finditer(original):
+        num = (m.group(1) or m.group(2)).replace(",", "")
+        n = re.escape(num)
+        still_hedged = re.search(rf"(?:{HEDGE}\s*{n}(?!\d))|(?<![\d.]){n}\+", suggested.replace(",", ""), re.I)
+        if re.search(rf"(?<![\d.]){n}(?![\d.])", suggested.replace(",", "")) and not still_hedged:
+            dropped.append(m.group(0).strip())
+    return dropped
+
+
 def _known_term(term: str, resume_lower: str) -> bool:
     """A term is fine if it's in the resume. Hyphenated compounds such as
     "LLM-powered" or "preference-based" are fine if their named parts are."""
@@ -98,6 +118,10 @@ def check_rewrite(original: str, suggested: str, resume_text: str) -> GuardResul
     new_numbers = _numbers(suggested) - _numbers(original)
     if new_numbers:
         return GuardResult(False, f"invented number(s): {', '.join(sorted(new_numbers))}")
+
+    dropped = _dropped_hedges(original, suggested)
+    if dropped:
+        return GuardResult(False, f"dropped qualifier: {', '.join(dropped)} stated as exact")
 
     for label, pattern in CLAIM_PATTERNS.items():
         new = {m.group().lower() for m in pattern.finditer(suggested)} - \

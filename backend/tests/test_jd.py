@@ -109,3 +109,16 @@ def test_ai_match_review_guard_and_requirements():
     assert "AWS" not in extra  # already in keyword list
     assert extra["Airflow"] == {"skill": "Airflow", "importance": "nice", "found": True}
     assert extra["3+ years backend"]["found"] is False
+
+
+def test_ai_requirements_reworded_duplicates_are_dropped():
+    payload = {
+        "rubric": [], "strengths": [], "gaps": [], "rewrites": [],
+        "requirements": [{"skill": n, "importance": "required"} for n in
+                         ("Go (Golang)", "RESTful APIs", "GitHub Actions / CI/CD",
+                          "Data structures and algorithms", "3+ years backend", "Kubernetes on EKS")],
+    }
+    out = review_match(FakeClient(lambda s, p: json.dumps(payload)), RESUME, [], JD,
+                       keyword_skills=["Go", "REST APIs", "CI/CD", "Git", "Data structures & algorithms"])
+    names = [r["skill"] for r in out["other_requirements"]]
+    assert names == ["3+ years backend", "Kubernetes on EKS"]  # Kubernetes isn't in the keyword list

@@ -108,9 +108,10 @@ class GeminiClient:
                     log.warning("AI review: %s failed after %.1fs (%s): %s", model,
                                 time.monotonic() - started, code, str(exc)[:160])
                     last_error = exc
-                    if code in MODEL_MISSING or code == 408:
-                        # Model unavailable, or so slow it timed out: retrying the
-                        # same model would just double the wait. Use the next one.
+                    if code in MODEL_MISSING or code in (408, 504):
+                        # Model unavailable, or so slow it timed out (our timeout,
+                        # or Gemini's own 504 DEADLINE_EXCEEDED): retrying the same
+                        # model would just double the wait. Use the next one.
                         break
                     if code not in RETRYABLE:
                         raise LLMError(f"Gemini request failed: {exc}") from exc

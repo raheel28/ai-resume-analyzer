@@ -67,3 +67,9 @@ def test_timeout_moves_to_next_model_without_retrying():
     c = make_client(["slow", "b"], {"slow": [408], "b": ['{"ok": true}']})
     assert c.generate("s", "p", Out).ok
     assert c.calls == ["slow", "b"]
+
+
+def test_deadline_exceeded_moves_on_instead_of_retrying():
+    c = make_client(["slow", "b"], {"slow": [504], "b": ['{"ok": true}']})
+    assert c.generate("s", "p", Out).ok
+    assert c.calls == ["slow", "b"]

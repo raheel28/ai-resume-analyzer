@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from app.jd.lexicon import mentions
+from app.jd.lexicon import mentions, skills_in
 from app.llm.client import LLMClient
 
 from .review import MAX_RESUME_CHARS, MAX_REWRITES, filter_rewrites, rubric_score
@@ -57,10 +57,17 @@ def review_match(client: LLMClient, resume_text: str, bullets: list[str], jd: st
     # Requirements the AI spotted that the keyword list doesn't already cover.
     # "found" is checked here in code, not taken from the model.
     seen = {s.lower() for s in keyword_skills}
+    keyword_set = set(keyword_skills)
     extra = []
     for req in raw.requirements[:15]:
         name = req.skill.strip()
         if not name or name.lower() in seen or len(name) > 60:
+            continue
+        # The model words skills its own way ("Go (Golang)", "RESTful APIs",
+        # "GitHub Actions / CI/CD"). If every known skill it names is already in
+        # the keyword list, it's a duplicate, not a new requirement.
+        named = set(skills_in(name))
+        if named and named <= keyword_set:
             continue
         seen.add(name.lower())
         extra.append({

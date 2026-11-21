@@ -30,7 +30,7 @@ python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env          # add GEMINI_API_KEY to enable the AI review
 uvicorn app.main:app --reload # http://localhost:8000/docs
-pytest                        # 55 tests incl. eval thresholds, no API key needed (AI tests use a fake client)
+pytest                        # 57 tests incl. eval thresholds, no API key needed (AI tests use a fake client)
 ```
 
 Frontend:
@@ -88,7 +88,7 @@ There are 74 hand-labelled AI-style rewrites of one sample resume. Each is label
 **accept** (honest rewording) or **reject** (invents a number, tool, scale, leadership
 claim, award or employer).
 
-| | Dev set (50, used while improving) | Held-out set (24, never tuned on) |
+| | Dev set (50 cases in round 1; 61 now) | Held-out set (24, never tuned on) |
 |---|---|---|
 | Invented facts caught, before | 50% (14/28) | 29% (4/14) |
 | Invented facts caught, **after** | 100% (28/28) | **100% (14/14)** |
@@ -100,6 +100,16 @@ The first version only caught capitalised terms and digits. The eval showed it m
 - scale claims ("millions of customers")
 - invented leadership ("Led a team…")
 - invented awards
+
+**Round 2 (found on the live site).** Testing the deployed app with real Gemini output
+showed two more ways a rewrite could exaggerate:
+- dropping a qualifier: "by *about* 15%" became "by 15%", and "20+" became "20"
+- vague scale words: "high-volume", "large-scale", "at scale"
+
+I added those live outputs, plus similar cases and honest counterparts, to the dev set
+(now 61 cases). Before the fix it caught 80% (28/35); after, 100% (35/35), with 0 of 26
+honest rewrites blocked. The held-out set didn't change (still 14/14 caught, 1/10 wrongly
+blocked), so the fix didn't break anything there.
 
 The held-out set was written **before** the fixes, to check they generalise. Its
 remaining error is "algorithms" being read as a skill claim. It is left unfixed on

@@ -1,5 +1,3 @@
-"""FastAPI entry point. Run with: uvicorn app.main:app --reload"""
-
 from __future__ import annotations
 
 import json
@@ -46,7 +44,6 @@ app.add_middleware(
                     "X-Skills-Added", "X-Pages"],
 )
 
-# AI calls spend the Gemini quota, so they get a tight per-IP limit.
 AI_LIMIT = RateLimiter(os.getenv("AI_RATE_LIMIT", "10/hour"))
 BASIC_LIMIT = RateLimiter(os.getenv("BASIC_RATE_LIMIT", "60/minute"))
 
@@ -87,7 +84,7 @@ async def _read_resume_with_bytes(file: UploadFile) -> tuple[bytes, ExtractedDoc
         return data, extract(file.filename or "", data)
     except UnsupportedFileError as exc:
         raise HTTPException(415, str(exc)) from exc
-    except Exception as exc:  # corrupt PDFs raise a variety of errors
+    except Exception as exc:
         raise HTTPException(422, "Couldn't read this file. Is it a valid PDF or DOCX?") from exc
 
 
@@ -103,7 +100,6 @@ def health() -> dict:
 
 @app.post("/api/analyze", dependencies=[basic_limit])
 async def analyze(file: UploadFile = File(...)) -> dict:
-    """Rule-based ATS check. Fast, free, deterministic."""
     doc = await _read_resume(file)
     report = analyse(doc)
     report["file"] = {"name": file.filename, "type": doc.file_type,
@@ -113,8 +109,6 @@ async def analyze(file: UploadFile = File(...)) -> dict:
 
 @app.post("/api/ai-review", dependencies=[ai_limit])
 async def ai_review(file: UploadFile = File(...), target_role: str = Form("")) -> dict:
-    """LLM rubric rating + guarded bullet rewrites. Slower and costs API calls,
-    so the frontend calls it separately after /api/analyze."""
     doc = await _read_resume(file)
     if doc.word_count < 50:
         raise HTTPException(422, "Not enough text in the resume for an AI review")
@@ -126,7 +120,6 @@ async def ai_review(file: UploadFile = File(...), target_role: str = Form("")) -
     bullets = find_bullets(split_sections(doc.lines))
     started = time.monotonic()
     try:
-        # The SDK call is blocking; keep it off the event loop.
         result = await run_in_threadpool(review_resume, client, doc.text, bullets,
                                          target_role[:100] or None)
     except LLMError as exc:
@@ -146,7 +139,6 @@ async def _read_jd(jd_text: str, jd_file: UploadFile | None) -> str:
 @app.post("/api/match", dependencies=[basic_limit])
 async def match(file: UploadFile = File(...), jd_text: str = Form(""),
                 jd_file: UploadFile | None = File(None)) -> dict:
-    """Rule-based keyword match between resume and job description. Fast and deterministic."""
     jd = await _read_jd(jd_text, jd_file)
     doc = await _read_resume(file)
     result = keyword_match(doc.text, jd)
@@ -158,7 +150,6 @@ async def match(file: UploadFile = File(...), jd_text: str = Form(""),
 @app.post("/api/ai-match", dependencies=[ai_limit])
 async def ai_match(file: UploadFile = File(...), jd_text: str = Form(""),
                    jd_file: UploadFile | None = File(None)) -> dict:
-    """AI fit review against the job description, with job-tailored guarded rewrites."""
     jd = await _read_jd(jd_text, jd_file)
     doc = await _read_resume(file)
     if doc.word_count < 50:
@@ -186,13 +177,11 @@ async def ai_match(file: UploadFile = File(...), jd_text: str = Form(""),
 @app.post("/api/apply", dependencies=[basic_limit])
 async def apply_changes(
     file: UploadFile = File(...),
-    changes: str = Form("[]"),         # JSON: [{"original": "...", "replacement": "..."}]
-    add_skills: str = Form("[]"),      # JSON: ["Docker", "AWS"], skills the user confirmed they have
-    format: str = Form("docx"),        # "docx" | "pdf"
-    keep_layout: bool = Form(True),    # DOCX uploads only: edit the original file in place
+    changes: str = Form("[]"),
+    add_skills: str = Form("[]"),
+    format: str = Form("docx"),
+    keep_layout: bool = Form(True),
 ) -> Response:
-    """Apply accepted changes and return the updated resume as a download.
-    With no changes, returns an ATS-clean rebuild of the resume."""
     if format not in MIME:
         raise HTTPException(400, "format must be 'docx' or 'pdf'")
     try:
@@ -205,7 +194,7 @@ async def apply_changes(
 
     data, doc = await _read_resume_with_bytes(file)
     in_place = doc.file_type == "docx" and format == "docx" and keep_layout
-    pages = None  # unknown for in-place DOCX edits (Word decides the layout)
+    pages = None
 
     if in_place and not parsed and not skills:
         raise HTTPException(422, "Nothing to change. Select some changes, or untick "
@@ -217,8 +206,6 @@ async def apply_changes(
         lines, result = apply_to_lines(doc.lines, parsed)
         lines, result.skills_added = add_skills_to_lines(lines, skills)
         model = build_model(lines, doc.links)
-        # Pick the most comfortable layout that fits on ONE page; the DOCX uses the
-        # same sizes (Calibri is narrower than Helvetica, so it fits too).
         layout, pages = fit_one_page(model)
         out = render_docx(model, layout) if format == "docx" else render_pdf(model, layout)
 
@@ -240,10 +227,6 @@ async def apply_changes(
     )
 
 
-# ---------------------------------------------------------------- frontend
-# In the single-service deploy (root Dockerfile) the built React app is copied
-# to STATIC_DIR and served from "/", so one URL serves both site and API.
-# Mounted last, so every /api/... route above takes priority.
 _static_dir = Path(os.getenv("STATIC_DIR", Path(__file__).resolve().parent.parent / "static"))
 if _static_dir.is_dir():
     from fastapi.staticfiles import StaticFiles

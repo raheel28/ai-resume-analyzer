@@ -1,12 +1,3 @@
-"""Apply accepted bullet changes to a resume.
-
-Two paths:
-  * DOCX, keep layout: replace paragraph text inside the user's own file, so
-    fonts, spacing and list formatting stay exactly as they were.
-  * Anything else: change the extracted lines, then rebuild the resume from
-    a clean single-column ATS template (see render.py).
-"""
-
 from __future__ import annotations
 
 import io
@@ -22,7 +13,6 @@ MAX_CHANGES = 30
 MAX_LEN = 400
 MAX_SKILLS = 20
 SKILL_HEADINGS = SECTION_ALIASES["skills"]
-# Any "[...]" left in a replacement is an unfilled placeholder, whatever its length.
 UNFILLED_RE = re.compile(r"\[[^\]]*\]")
 LITERAL_BULLET_RE = re.compile(r"^\s*([•▪●◦*\-–•·])\s*")
 
@@ -67,8 +57,6 @@ def validate_changes(raw: object) -> list[Change]:
 
 
 def _matches(text: str, target: str) -> bool:
-    """Exact match after normalising, or the target covers most of the line
-    (the AI sometimes quotes a bullet without its trailing clause)."""
     norm = normalise(text)
     if not norm:
         return False
@@ -114,7 +102,6 @@ def edit_docx_in_place(data: bytes, changes: list[Change],
         for p in paragraphs:
             if p.runs and _matches(p.text, target):
                 new_text = _with_bullet(p.text, ch.replacement)
-                # Keep the first run's formatting (font, size, bold), drop the rest.
                 p.runs[0].text = new_text
                 for run in p.runs[1:]:
                     run._element.getparent().remove(run._element)
@@ -130,8 +117,6 @@ def edit_docx_in_place(data: bytes, changes: list[Change],
     document.save(buf)
     return buf.getvalue(), result
 
-
-# ------------------------------------------------------------------ skills
 
 def validate_skills(raw: object) -> list[str]:
     if raw in (None, ""):
@@ -163,7 +148,6 @@ def _new_skills(existing_text: str, skills: list[str]) -> list[str]:
 
 
 def add_skills_to_lines(lines: list[str], skills: list[str]) -> tuple[list[str], list[str]]:
-    """Append skills to the first line of the Skills section (or add a section)."""
     todo = _new_skills("\n".join(lines), skills)
     if not todo:
         return lines, []
@@ -188,7 +172,6 @@ def add_skills_docx(document, skills: list[str]) -> list[str]:
             for target in paragraphs[i + 1:]:
                 if target.text.strip():
                     if _is_any_heading(target.text):
-                        # Empty Skills section: put the list right before the next heading.
                         target.insert_paragraph_before(", ".join(todo))
                         return todo
                     run = target.runs[-1] if target.runs else target.add_run("")

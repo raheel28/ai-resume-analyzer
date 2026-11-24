@@ -1,9 +1,3 @@
-"""Rule-based ATS checks.
-
-Every check is deterministic: the same resume always gets the same result.
-Each returns a score in [0, 1]; the scorer weights and combines them.
-"""
-
 from __future__ import annotations
 
 import re
@@ -19,11 +13,11 @@ from .action_verbs import ACTION_VERBS
 @dataclass
 class CheckResult:
     id: str
-    category: str  # "parseability" | "structure" | "content"
+    category: str
     title: str
-    score: float  # 0..1
+    score: float
     weight: float
-    severity: str  # "critical" | "warning" | "tip" | "pass"
+    severity: str
     message: str
     details: list[str] = field(default_factory=list)
 
@@ -49,13 +43,12 @@ PHONE_RE = re.compile(r"\+?\d[\d\s().-]{7,}\d")
 
 
 def has_phone(text: str) -> bool:
-    # Require 9+ digits so year ranges like "2022 - 2026" don't count.
     return any(sum(c.isdigit() for c in m.group()) >= 9 for m in PHONE_RE.finditer(text))
 LINK_RE = re.compile(r"(linkedin\.com/in/|github\.com/)", re.I)
 BULLET_PREFIX = re.compile(r"^[•▪●◦‣⁃∙*\-–•·]\s*")
 NUMBER_RE = re.compile(r"\d|%|€|\$|£")
 PRONOUN_RE = re.compile(r"\b(I|me|my|mine|myself)\b")
-PRIVATE_USE_RE = re.compile(r"[-]")  # icon fonts, often unreadable by ATS
+PRIVATE_USE_RE = re.compile(r"[-]")
 
 MONTH = r"(jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\.?"
 DATE_PATTERNS = {
@@ -72,23 +65,17 @@ def _sev(score: float, critical_below: float = 0.4) -> str:
 
 
 def find_bullets(resume: SectionedResume) -> list[str]:
-    """Bullet-like lines from experience and projects sections."""
     lines = [ln for name in ("experience", "projects") for ln in resume.sections.get(name, [])]
     marked = [BULLET_PREFIX.sub("", ln).strip() for ln in lines if BULLET_PREFIX.match(ln)]
     if marked:
         return [b for b in marked if b]
-    # No bullet symbols (e.g. Word list formatting was lost): fall back to
-    # sentence-like lines, skipping job-title lines that contain dates.
     return [ln for ln in lines
             if len(ln.split()) >= 6 and not any(p.search(ln) for p in DATE_PATTERNS.values())]
 
 
-# ------------------------------------------------------------ parseability
-
 def check_text_extractable(ctx: Context) -> CheckResult:
     wc = ctx.doc.word_count
     if ctx.doc.file_type == "docx":
-        # DOCX text is always machine-readable; shortness is the length check's job.
         score = 1.0 if wc >= 30 else 0.0
         msg = f"{wc} words extracted." if score else "The document appears to be empty."
         return CheckResult("text_extractable", "parseability", "Text can be read", score, 4,
@@ -156,8 +143,6 @@ def check_special_chars(ctx: Context) -> CheckResult:
                        "tip", " ".join(parts))
 
 
-# ------------------------------------------------------------ structure
-
 def check_contact(ctx: Context) -> CheckResult:
     text = ctx.doc.text + "\n" + ctx.doc.header_footer_text
     found = {
@@ -174,7 +159,6 @@ def check_contact(ctx: Context) -> CheckResult:
 
 def check_core_sections(ctx: Context) -> CheckResult:
     required = ["experience", "education", "skills"]
-    # Students often have Projects instead of Experience; accept either.
     present = {
         "experience": ctx.resume.has("experience") or ctx.resume.has("projects"),
         "education": ctx.resume.has("education"),
@@ -228,15 +212,13 @@ def check_date_format(ctx: Context) -> CheckResult:
                        _sev(score), msg, used)
 
 
-# ------------------------------------------------------------ content
-
 def check_action_verbs(ctx: Context) -> CheckResult:
     if not ctx.bullets:
         return CheckResult("action_verbs", "content", "Bullets start with action verbs", 0.5, 3,
                            "warning", "No bullet points found (no Experience or Projects section was recognised).")
     weak = [b for b in ctx.bullets if b.split()[0].lower().strip(",.:;") not in ACTION_VERBS]
     ratio = 1 - len(weak) / len(ctx.bullets)
-    score = min(1.0, ratio / 0.8)  # 80%+ strong starts counts as full marks
+    score = min(1.0, ratio / 0.8)
     msg = (f"{ratio:.0%} of bullets start with a strong action verb." +
            ("" if score >= 0.8 else " Start bullets with verbs like Built, Led, Reduced, Designed."))
     return CheckResult("action_verbs", "content", "Bullets start with action verbs", score, 3,
@@ -249,7 +231,7 @@ def check_quantified(ctx: Context) -> CheckResult:
                            "warning", "No bullet points found to check.")
     with_numbers = [b for b in ctx.bullets if NUMBER_RE.search(b)]
     ratio = len(with_numbers) / len(ctx.bullets)
-    score = min(1.0, ratio / 0.5)  # half the bullets with a number = full marks
+    score = min(1.0, ratio / 0.5)
     without = [b for b in ctx.bullets if b not in with_numbers]
     msg = (f"{ratio:.0%} of bullets include a number." +
            ("" if score >= 0.8 else " Add scale or impact: users, %, time saved, requests/sec."))

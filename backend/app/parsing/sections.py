@@ -1,16 +1,8 @@
-"""Split resume lines into sections using heading detection.
-
-This is a cheap heuristic pass. A later milestone uses the LLM to produce a
-fully structured resume, but the ATS check needs to work without an API key
-and give the same answer every time.
-"""
-
 from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
 
-# Canonical section -> headings ATS commonly recognise.
 SECTION_ALIASES: dict[str, set[str]] = {
     "summary": {"summary", "professional summary", "profile", "about me", "objective",
                 "career objective", "career summary", "personal statement"},
@@ -39,11 +31,11 @@ _STRIP = re.compile(r"[^a-z& ]+")
 
 @dataclass
 class SectionedResume:
-    header: list[str] = field(default_factory=list)  # lines before the first heading
+    header: list[str] = field(default_factory=list)
     sections: dict[str, list[str]] = field(default_factory=dict)
-    heading_map: dict[str, str] = field(default_factory=dict)  # original heading -> canonical
+    heading_map: dict[str, str] = field(default_factory=dict)
     unrecognised_headings: list[str] = field(default_factory=list)
-    titles: dict[str, str] = field(default_factory=dict)  # section key -> heading as written
+    titles: dict[str, str] = field(default_factory=dict)
 
     def has(self, name: str) -> bool:
         return bool(self.sections.get(name))
@@ -79,8 +71,6 @@ def split_sections(lines: list[str]) -> SectionedResume:
             result.titles.setdefault(canon, line.rstrip(":").strip())
             continue
         if _looks_like_heading(line) and current is not None:
-            # A heading-like line we don't recognise. Keep it as its own
-            # section so content isn't wrongly merged into the previous one.
             result.unrecognised_headings.append(line)
             current = f"other:{norm}"
             result.sections.setdefault(current, [])

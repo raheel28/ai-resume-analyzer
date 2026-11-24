@@ -34,7 +34,6 @@ export default function App() {
 
       <ServerStatus />
 
-      {/* Both stay mounted so switching tabs doesn't throw away results. */}
       <div className="mode" hidden={mode !== "check"}><CheckMode /></div>
       <div className="mode" hidden={mode !== "match"}><MatchMode /></div>
     </main>

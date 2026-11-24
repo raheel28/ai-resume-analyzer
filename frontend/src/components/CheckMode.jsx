@@ -6,14 +6,13 @@ import IssueList from "./IssueList.jsx";
 import AIReview from "./AIReview.jsx";
 import ApplyPanel from "./ApplyPanel.jsx";
 
-/** Mode 1: general resume check (ATS rules + AI review), then make changes & download. */
 export default function CheckMode() {
   const [targetRole, setTargetRole] = useState("");
   const [file, setFile] = useState(null);
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [ai, setAi] = useState({ status: "idle" }); // idle | loading | done | error
+  const [ai, setAi] = useState({ status: "idle" });
   const [selected, setSelected] = useState([]);
 
   function runAiReview(f = file) {
@@ -31,7 +30,6 @@ export default function CheckMode() {
     setLoading(true);
     setError("");
     setReport(null);
-    // The ATS score comes back in well under a second; the AI review fills in later.
     runAiReview(f);
     try {
       setReport(await analyzeResume(f));

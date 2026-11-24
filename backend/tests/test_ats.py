@@ -25,7 +25,6 @@ def test_bad_docx_flags_layout_and_content_problems():
     for check_id in ("tables", "columns", "header_footer", "core_sections",
                      "action_verbs", "quantified"):
         assert not c[check_id]["passed"], check_id
-    # Most serious problems come first.
     assert report["issues"][0]["severity"] == "critical"
 
 

@@ -56,8 +56,6 @@ function Rewrite({ item, edit, onChange }) {
   const complete = allFilled(edit.text, edit.values);
   const filled = fill(edit.text, edit.values);
 
-  // A rewrite can only stay selected while every placeholder has a valid value.
-  // Filling in the last one selects it automatically.
   function change(next) {
     const nowComplete = allFilled(next.text, next.values);
     const selected = nowComplete && (next.selected || (!complete && placeholders.length > 0));
@@ -70,7 +68,6 @@ function Rewrite({ item, edit, onChange }) {
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch {
-      /* clipboard blocked; user can select the text manually */
     }
   }
 
@@ -116,8 +113,6 @@ function Rewrite({ item, edit, onChange }) {
 }
 
 function Rewrites({ rewrites, onSelectionChange }) {
-  // Rewrites without placeholders start selected; ones with placeholders are
-  // locked until every value is filled in with the right type.
   const [edits, setEdits] = useState(() =>
     rewrites.map((r) => ({ text: r.suggested, values: {},
                            selected: parsePlaceholders(r.suggested).length === 0 }))
@@ -131,7 +126,6 @@ function Rewrites({ rewrites, onSelectionChange }) {
         .filter(({ edit }) => edit.selected && edit.text.trim() && allFilled(edit.text, edit.values))
         .map(({ original, edit }) => ({ original, replacement: fill(edit.text, edit.values).trim() }))
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [edits, rewrites]);
 
   return (

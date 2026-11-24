@@ -1,9 +1,3 @@
-"""Rebuild a resume as a clean, single-column, ATS-friendly DOCX or PDF.
-
-No tables, columns, text boxes, icons or header/footer content: just a name,
-a contact line, standard section headings and real bullet points.
-"""
-
 from __future__ import annotations
 
 import io
@@ -27,7 +21,6 @@ STANDARD_TITLES = {
     "achievements": "Achievements", "publications": "Publications",
     "volunteering": "Leadership & Activities", "languages": "Languages", "interests": "Interests",
 }
-# Sections where non-bullet lines are usually "Role, Company — dates" titles.
 TITLED_SECTIONS = {"experience", "projects", "education", "volunteering"}
 ICON_RE = re.compile(r"[-]")
 
@@ -35,7 +28,7 @@ ICON_RE = re.compile(r"[-]")
 @dataclass
 class Line:
     text: str
-    kind: str  # "bullet" | "title" | "text"
+    kind: str
 
 
 @dataclass
@@ -49,7 +42,7 @@ class ResumeModel:
     name: str
     contact: list[str]
     sections: list[Section]
-    links: list[dict] = field(default_factory=list)  # [{"text", "url"}] from the original file
+    links: list[dict] = field(default_factory=list)
 
 
 def build_model(lines: list[str], links: list[dict] | None = None) -> ResumeModel:
@@ -71,8 +64,6 @@ def build_model(lines: list[str], links: list[dict] | None = None) -> ResumeMode
                 section.lines.append(Line(ln, "title"))
             else:
                 prev = section.lines[-1] if section.lines else None
-                # Re-join plain text that the PDF wrapped onto several lines
-                # (a summary paragraph, a long skills list).
                 if prev and prev.kind == "text" and (
                         key == "summary" or prev.text.rstrip().endswith((",", "/", "&"))
                         or ln[:1].islower()):
@@ -83,8 +74,6 @@ def build_model(lines: list[str], links: list[dict] | None = None) -> ResumeMode
 
     return ResumeModel(name=header[0], contact=header[1:], sections=sections, links=links or [])
 
-
-# ------------------------------------------------------------------ links
 
 EMAIL_RE = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
 URL_RE = re.compile(
@@ -105,8 +94,6 @@ _WORD_CHARS = re.compile(r"[\w.@+\-/]")
 
 
 def _snap_to_word(text: str, a: int, b: int) -> tuple[int, int]:
-    """Grow [a, b) to whole words ("itHub" -> "GitHub") without swallowing
-    separators or trailing punctuation."""
     while a > 0 and _WORD_CHARS.match(text[a - 1]):
         a -= 1
     while b < len(text) and _WORD_CHARS.match(text[b]):
@@ -118,9 +105,6 @@ def _snap_to_word(text: str, a: int, b: int) -> tuple[int, int]:
 
 def link_segments(text: str, links: list[dict],
                   used: set | None = None) -> list[tuple[str, str | None]]:
-    """Split `text` into (chunk, url-or-None) pieces. Uses the original file's
-    link targets first (e.g. the word "GitHub" pointing at github.com/you),
-    then makes bare emails and web addresses clickable."""
     spans: list[tuple[int, int, str]] = []
 
     def free(a: int, b: int) -> bool:
@@ -130,7 +114,7 @@ def link_segments(text: str, links: list[dict],
         anchor = (link.get("text") or "").strip(" |•·,;:/")
         key = (anchor.lower(), link["url"])
         if len(anchor) < 2 or (used is not None and key in used):
-            continue  # like the original, link each anchor once (its first appearance)
+            continue
         i = text.find(anchor)
         if i < 0:
             continue
@@ -158,11 +142,8 @@ def link_segments(text: str, links: list[dict],
     return out or [(text, None)]
 
 
-# ------------------------------------------------------------------ layout
-
 @dataclass(frozen=True)
 class Layout:
-    """Sizes in points / inches. Tried in order until the resume fits one page."""
     body: float
     leading: float
     name: float
@@ -177,12 +158,10 @@ LAYOUTS = [
     Layout(10.0, 12.2, 16, 11.0, 6, 0.55, 0.65),
     Layout(9.5, 11.6, 15, 10.5, 5, 0.5, 0.6),
     Layout(9.0, 11.0, 14, 10.0, 4, 0.45, 0.55),
-    Layout(8.5, 10.3, 13, 9.5, 3, 0.4, 0.5),  # floor: smaller stops being readable
+    Layout(8.5, 10.3, 13, 9.5, 3, 0.4, 0.5),
 ]
 LINK_COLOR = "1155CC"
 
-
-# ------------------------------------------------------------------ DOCX
 
 def _bottom_border(paragraph) -> None:
     p_pr = paragraph._p.get_or_add_pPr()
@@ -284,17 +263,10 @@ def render_docx(model: ResumeModel, layout: Layout | None = None) -> bytes:
     return buf.getvalue()
 
 
-# ------------------------------------------------------------------ PDF
-
 _FONTS_READY = False
 
 
 def _register_fonts() -> None:
-    """Vera ships with reportlab and is embedded, so its bullet "•" extracts as
-    text. reportlab's built-in Helvetica draws "•" as an unmapped glyph that ATS
-    read as "(cid:127)", the exact problem the checker warns about. So bullets
-    always use Vera, and body text uses Helvetica (narrower, so more fits on one
-    page) unless the text has characters Helvetica can't show."""
     global _FONTS_READY
     if _FONTS_READY:
         return
@@ -379,8 +351,6 @@ def _build_pdf(model: ResumeModel, lay: Layout) -> tuple[bytes, int]:
 
 
 def fit_one_page(model: ResumeModel) -> tuple[Layout, int]:
-    """First layout (most comfortable first) whose PDF fits on one page.
-    Returns the tightest layout and its page count if nothing fits."""
     pages = 0
     for lay in LAYOUTS:
         _, pages = _build_pdf(model, lay)

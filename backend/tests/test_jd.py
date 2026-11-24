@@ -103,10 +103,10 @@ def test_ai_match_review_guard_and_requirements():
     out = review_match(FakeClient(lambda s, p: json.dumps(payload)), RESUME, [bullet], JD,
                        keyword_skills=["AWS", "Python"])
     assert out["score"] == 60
-    assert len(out["rewrites"]) == 1  # the one that slipped in AWS is rejected
+    assert len(out["rewrites"]) == 1
     assert "aws" in out["rejected_rewrites"][0]["reason"]
     extra = {r["skill"]: r for r in out["other_requirements"]}
-    assert "AWS" not in extra  # already in keyword list
+    assert "AWS" not in extra
     assert extra["Airflow"] == {"skill": "Airflow", "importance": "nice", "found": True}
     assert extra["3+ years backend"]["found"] is False
 
@@ -121,4 +121,4 @@ def test_ai_requirements_reworded_duplicates_are_dropped():
     out = review_match(FakeClient(lambda s, p: json.dumps(payload)), RESUME, [], JD,
                        keyword_skills=["Go", "REST APIs", "CI/CD", "Git", "Data structures & algorithms"])
     names = [r["skill"] for r in out["other_requirements"]]
-    assert names == ["3+ years backend", "Kubernetes on EKS"]  # Kubernetes isn't in the keyword list
+    assert names == ["3+ years backend", "Kubernetes on EKS"]

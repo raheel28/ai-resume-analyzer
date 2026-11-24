@@ -1,5 +1,3 @@
-"""Rule-based job description match: which of the JD's skills does the resume show?"""
-
 from __future__ import annotations
 
 import re
@@ -12,7 +10,6 @@ MIN_JD_CHARS = 80
 MAX_JD_CHARS = 20_000
 MAX_JD_FILE_BYTES = 2 * 1024 * 1024
 
-# Text after one of these headings/phrases lists nice-to-haves, not requirements.
 NICE_TO_HAVE_RE = re.compile(
     r"nice[\s-]to[\s-]haves?|preferred(?:\s+qualifications|\s+skills)?|bonus(?:\s+points)?"
     r"|desirable|would\s+be\s+a\s+plus|is\s+a\s+plus|good\s+to\s+have|pluses",
@@ -48,8 +45,6 @@ def read_jd(text: str | None, filename: str | None, data: bytes | None) -> str:
 
 
 def classify(jd: str) -> dict[str, str]:
-    """Skill -> 'required' | 'nice'. A skill is nice-to-have only if it is
-    mentioned *only* after a nice-to-have marker."""
     m = NICE_TO_HAVE_RE.search(jd)
     main, extra = (jd[: m.start()], jd[m.start():]) if m else (jd, "")
     result = {}

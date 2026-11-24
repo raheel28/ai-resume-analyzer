@@ -1,8 +1,5 @@
 import { useEffect, useState } from "react";
 
-// The model returns everything in one response, so there's no real progress
-// to report. This bar is an estimate: it eases toward 95% over roughly
-// EXPECTED_SECONDS and only reaches 100% when the review actually arrives.
 const EXPECTED_SECONDS = 12;
 
 const STEPS = [

@@ -1,12 +1,8 @@
 import { useEffect, useState } from "react";
 import { health } from "../api.js";
 
-/**
- * Shows a banner only if the API is slow to answer, e.g. a free Render
- * instance waking up after being idle. Silent when the server is already up.
- */
 export default function ServerStatus() {
-  const [state, setState] = useState("checking"); // checking | waking | ready | down
+  const [state, setState] = useState("checking");
   const [seconds, setSeconds] = useState(0);
 
   useEffect(() => {

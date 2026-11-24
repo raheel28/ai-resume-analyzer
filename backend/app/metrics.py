@@ -1,10 +1,3 @@
-"""Privacy-safe usage metrics: one JSON line per AI request.
-
-Records timings, which model answered, retries/fallbacks and how many AI
-rewrites the guard accepted or rejected (and why). Never records resume or
-job-description text. Summarise with:  python -m evals.usage_report
-"""
-
 from __future__ import annotations
 
 import json
@@ -23,7 +16,6 @@ def metrics_path() -> Path:
 
 
 def reason_category(reason: str) -> str:
-    """'invented quantity: doubled' -> 'invented quantity'."""
     return reason.split(":", 1)[0].strip() if reason else "unknown"
 
 
@@ -36,7 +28,7 @@ def record(event: dict) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
         with _lock, path.open("a", encoding="utf-8") as f:
             f.write(json.dumps(event) + "\n")
-    except OSError as exc:  # metrics must never break a request
+    except OSError as exc:
         log.warning("Could not write metrics: %s", exc)
 
 

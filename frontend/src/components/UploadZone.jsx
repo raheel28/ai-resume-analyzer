@@ -36,7 +36,7 @@ export default function UploadZone({ onFile, disabled }) {
         hidden
         onChange={(e) => {
           pick(e.target.files);
-          e.target.value = ""; // allow re-uploading the same file
+          e.target.value = "";
         }}
       />
       <strong>Drop your resume here</strong>

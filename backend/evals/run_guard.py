@@ -1,16 +1,3 @@
-"""Evaluate the rewrite guard on hand-labelled cases.
-
-Each case is an original bullet, an AI-style rewrite, and whether an honest
-reviewer should ACCEPT it or REJECT it (it invents a fact). We treat
-"reject" as the positive class: catching invented facts is the guard's job.
-
-  recall     = invented-fact rewrites caught / all invented-fact rewrites
-  precision  = correct rejections / all rejections
-  false-rejection rate = honest rewrites wrongly blocked / all honest rewrites
-
-Usage (from backend/):  python -m evals.run_guard [--json] [--show-errors]
-"""
-
 from __future__ import annotations
 
 import argparse
@@ -35,7 +22,7 @@ def evaluate(set_name: str = "dev") -> dict:
     resume = (DATA / "guard_resume.txt").read_text()
     cases = load_cases(set_name)
     tp = fp = tn = fn = 0
-    by_cat: dict[str, list[int]] = defaultdict(lambda: [0, 0])  # [correct, total]
+    by_cat: dict[str, list[int]] = defaultdict(lambda: [0, 0])
     errors = []
     for c in cases:
         verdict = check_rewrite(c["original"], c["suggested"], resume)

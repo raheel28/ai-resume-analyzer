@@ -1,5 +1,3 @@
-"""Combine checks into an overall ATS score with a per-category breakdown."""
-
 from __future__ import annotations
 
 from app.parsing.extract import ExtractedDocument

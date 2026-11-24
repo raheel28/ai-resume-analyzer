@@ -21,15 +21,9 @@ function SkillRow({ row, checked, onToggle }) {
   );
 }
 
-/**
- * Overall match score + keyword table. Missing skills can be ticked to be
- * added to the resume's Skills section on download.
- */
 export default function MatchSummary({ match, ai, addSkills, onToggleSkill }) {
   const keyword = match.score;
   const aiScore = ai.status === "done" ? ai.data.score : null;
-  // Overall: keyword coverage is stable and ATS-like; the AI score adds judgement
-  // about experience and seniority. Weighted 60/40 when both exist.
   const overall = keyword != null && aiScore != null
     ? Math.round(0.6 * keyword + 0.4 * aiScore)
     : keyword ?? aiScore;

@@ -27,8 +27,6 @@ def canned(rewrites, rubric_score=7):
     return FakeClient(lambda system, prompt: json.dumps(payload))
 
 
-# ----------------------------------------------------------- guard
-
 def test_guard_rejects_invented_number():
     r = check_rewrite("Built a search API", "Built a search API serving 10,000 users", RESUME.text)
     assert not r.ok and "10000" in r.reason
@@ -48,8 +46,6 @@ def test_guard_allows_known_tech_and_placeholders():
 def test_guard_rejects_unchanged():
     assert not check_rewrite("Built X", "• built x", RESUME.text).ok
 
-
-# ----------------------------------------------------------- review
 
 def test_review_filters_rewrites():
     client = canned([

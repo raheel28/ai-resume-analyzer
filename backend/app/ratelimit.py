@@ -1,11 +1,3 @@
-"""Per-IP rate limiting, in memory, no extra dependencies.
-
-The AI endpoints spend your Gemini quota, so they get a tight limit; the
-rule-based endpoints get a looser one. Limits come from env vars like
-"10/hour" or "60/minute". In-memory state is fine for a single instance
-(Render free/starter); it resets on restart.
-"""
-
 from __future__ import annotations
 
 import math
@@ -19,7 +11,6 @@ UNITS = {"second": 1, "minute": 60, "hour": 3600, "day": 86400}
 
 
 def parse_limit(spec: str) -> tuple[int, int]:
-    """'10/hour' -> (10, 3600)."""
     count, _, unit = spec.strip().partition("/")
     unit = unit.strip().rstrip("s")
     if unit not in UNITS:
@@ -28,7 +19,6 @@ def parse_limit(spec: str) -> tuple[int, int]:
 
 
 class RateLimiter:
-    """Sliding-window limiter: at most `limit` hits per `window` seconds per key."""
 
     def __init__(self, spec: str, clock: Callable[[], float] = time.monotonic,
                  max_keys: int = 50_000):
@@ -39,7 +29,6 @@ class RateLimiter:
         self._max_keys = max_keys
 
     def check(self, key: str) -> float | None:
-        """Record a hit. Returns None if allowed, else seconds until a slot frees up."""
         now = self._clock()
         with self._lock:
             hits = self._hits[key]
@@ -48,7 +37,7 @@ class RateLimiter:
             if len(hits) >= self.limit:
                 return max(1.0, hits[0] + self.window - now)
             hits.append(now)
-            if len(self._hits) > self._max_keys:  # don't grow forever under a flood of IPs
+            if len(self._hits) > self._max_keys:
                 self._prune(now)
             return None
 
@@ -58,8 +47,6 @@ class RateLimiter:
 
 
 def client_ip(headers: dict, peer: str | None) -> str:
-    """Behind Render/Railway the real client is the first X-Forwarded-For entry.
-    Only trust that header when TRUST_PROXY=1, otherwise anyone could fake it."""
     if os.getenv("TRUST_PROXY") == "1":
         forwarded = headers.get("x-forwarded-for", "")
         if forwarded:

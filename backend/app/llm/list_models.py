@@ -1,8 +1,3 @@
-"""Print the Gemini model IDs your API key can use for text generation.
-
-Usage (from backend/):  python -m app.llm.list_models
-"""
-
 import os
 
 from dotenv import load_dotenv

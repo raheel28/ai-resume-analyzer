@@ -41,7 +41,6 @@ def test_usage_summary():
 
 
 def test_guard_eval_thresholds():
-    """Fails CI if a change makes the guard worse on the held-out set."""
     holdout = guard_eval("holdout")
     assert holdout["recall"] >= 0.9
     assert holdout["false_rejection_rate"] <= 0.15

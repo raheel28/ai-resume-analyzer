@@ -18,7 +18,7 @@ def test_validate_rejects_unfilled_placeholders():
         validate_changes([{"original": "x", "replacement": "Grew users by [X%]"}])
     with pytest.raises(ValueError, match="placeholders"):
         validate_changes([{"original": "x", "replacement": "Served [number of monthly active users here]"}])
-    assert validate_changes([]) == []  # empty = ATS-clean rebuild only
+    assert validate_changes([]) == []
     assert validate_changes([{"original": "a", "replacement": "  b   c "}])[0].replacement == "b c"
 
 

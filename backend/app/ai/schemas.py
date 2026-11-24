@@ -1,6 +1,3 @@
-"""Shapes the model must return. Kept small and flat: smaller schemas give
-more reliable structured output."""
-
 from __future__ import annotations
 
 from pydantic import BaseModel, Field, field_validator
@@ -14,7 +11,6 @@ class CriterionScore(BaseModel):
     @field_validator("score", mode="before")
     @classmethod
     def clamp(cls, v):
-        # Clamp instead of failing the whole response over one out-of-range number.
         try:
             return max(1, min(10, int(round(float(v)))))
         except (TypeError, ValueError):
@@ -28,7 +24,6 @@ class BulletRewrite(BaseModel):
 
 
 class ModelReview(BaseModel):
-    """Raw model output, before the server-side guard runs."""
     rubric: list[CriterionScore]
     strengths: list[str]
     improvements: list[str]
@@ -41,7 +36,6 @@ class JDRequirement(BaseModel):
 
 
 class ModelMatchReview(BaseModel):
-    """Raw model output for resume-vs-job-description review."""
     rubric: list[CriterionScore]
     strengths: list[str]
     gaps: list[str]

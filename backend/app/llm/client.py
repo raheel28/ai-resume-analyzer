@@ -1,10 +1,3 @@
-"""Provider-agnostic LLM wrapper.
-
-Everything else in the app calls `get_client().generate(system, prompt, Model)`
-and gets back a validated Pydantic object. Switching from Gemini to Claude,
-OpenAI or Grok means adding one class here.
-"""
-
 from __future__ import annotations
 
 import logging
@@ -15,15 +8,15 @@ from typing import Callable, Protocol, TypeVar
 from pydantic import BaseModel
 
 T = TypeVar("T", bound=BaseModel)
-log = logging.getLogger("uvicorn.error")  # shows up in the run.sh terminal
+log = logging.getLogger("uvicorn.error")
 
 
 class LLMError(RuntimeError):
-    """The provider failed or returned something unusable."""
+    pass
 
 
 class LLMNotConfigured(LLMError):
-    """No API key / provider set up."""
+    pass
 
 
 class LLMClient(Protocol):
@@ -32,7 +25,6 @@ class LLMClient(Protocol):
     def generate(self, system: str, prompt: str, schema: type[T]) -> T: ...
 
 
-# Errors worth retrying or moving to another model for.
 RETRYABLE = {408, 429, 500, 502, 503, 504}
 MODEL_MISSING = {404}
 
@@ -61,13 +53,13 @@ class GeminiClient:
         try:
             self._client = genai.Client(
                 api_key=api_key, http_options=types.HttpOptions(timeout=int(timeout_s * 1000)))
-        except TypeError:  # older SDKs without HttpOptions(timeout=...)
+        except TypeError:
             self._client = genai.Client(api_key=api_key)
         self._models = models
         self._retries = retries
         self._sleep = sleep
         self.last_model: str | None = None
-        self.last_attempts: list[dict] = []  # per-call record for usage metrics
+        self.last_attempts: list[dict] = []
 
     def _call(self, model: str, system: str, prompt: str, schema: type[T]) -> str | None:
         from google.genai import types
@@ -78,7 +70,7 @@ class GeminiClient:
             config=types.GenerateContentConfig(
                 system_instruction=system,
                 response_mime_type="application/json",
-                response_schema=schema,  # SDK accepts Pydantic models directly
+                response_schema=schema,
                 temperature=0.2,
             ),
         )
@@ -88,7 +80,6 @@ class GeminiClient:
         last_error: Exception | None = None
         self.last_attempts = []
         for i, model in enumerate(self._models):
-            # Retry the primary model on "busy" errors; fallbacks get one try each.
             attempts = 1 + (self._retries if i == 0 else 0)
             for attempt in range(attempts):
                 started = time.monotonic()
@@ -101,7 +92,7 @@ class GeminiClient:
                     return _parse(schema, text)
                 except LLMError:
                     raise
-                except Exception as exc:  # SDK raises its own APIError types
+                except Exception as exc:
                     code = _status_code(exc)
                     self.last_attempts.append({"model": model, "ok": False, "code": code,
                                                "seconds": round(time.monotonic() - started, 2)})
@@ -109,9 +100,6 @@ class GeminiClient:
                                 time.monotonic() - started, code, str(exc)[:160])
                     last_error = exc
                     if code in MODEL_MISSING or code in (408, 504):
-                        # Model unavailable, or so slow it timed out (our timeout,
-                        # or Gemini's own 504 DEADLINE_EXCEEDED): retrying the same
-                        # model would just double the wait. Use the next one.
                         break
                     if code not in RETRYABLE:
                         raise LLMError(f"Gemini request failed: {exc}") from exc
@@ -124,7 +112,6 @@ class GeminiClient:
 
 
 class FakeClient:
-    """For tests and offline development: returns whatever `responder` builds."""
 
     def __init__(self, responder: Callable[[str, str], str]):
         self._responder = responder

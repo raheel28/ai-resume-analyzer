@@ -49,7 +49,6 @@ def test_rebuilt_docx_keeps_links():
     targets = {r.target_ref for r in out.part.rels.values() if r.is_external}
     assert {"https://github.com/alexm", "https://linkedin.com/in/alexm",
             "mailto:alex.murphy@example.com"} <= targets
-    # and the anchor words are still in the text
     assert "GitHub" in "".join(t.text for t in out.element.body.iter(qn("w:t")))
 
 
@@ -69,7 +68,6 @@ def test_too_long_resume_reports_pages_instead_of_cutting():
 
 
 def test_clipped_anchor_text_snaps_to_whole_words():
-    """Real PDFs: link boxes clip the first letter and include the separator."""
     links = [{"text": "itHub", "url": "https://github.com/u"},
              {"text": "eetCode", "url": "https://leetcode.com/u/x/"},
              {"text": "aheel@gmail.com", "url": "mailto:raheel@gmail.com"}]

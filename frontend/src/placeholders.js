@@ -1,12 +1,7 @@
-// Typed placeholders in AI rewrites, e.g. "[X%]", "[N users]", "[€X]", "[X]-second".
-// Each one becomes an input of the right type; the bullet can't be used until
-// every placeholder has a valid value.
-
 export const ANY_BRACKET = /\[[^\]]*\]/;
 const BRACKETS = /\[([^\]]*)\]/g;
 const CURRENCY = /[$€£₹]/;
 
-/** Work out what kind of value a placeholder wants from its text. */
 function classify(inner) {
   const text = inner.trim();
   const currency = text.match(CURRENCY)?.[0];
@@ -16,7 +11,6 @@ function classify(inner) {
   if (text.includes("%")) {
     return { kind: "percent", label: "Percentage" };
   }
-  // "N", "X", "#", optionally followed by a unit: "N users", "X hours", "X+ teams"
   const m = text.match(/^(?:N|X|Y|Z|#)\+?\s*(.*)$/i);
   if (m) {
     const unit = m[1].trim();
@@ -26,7 +20,6 @@ function classify(inner) {
   return { kind: "text", label: text || "Text" };
 }
 
-/** All placeholders in `text`, in order, with their position and type. */
 export function parsePlaceholders(text) {
   const out = [];
   for (const m of text.matchAll(BRACKETS)) {
@@ -36,7 +29,6 @@ export function parsePlaceholders(text) {
   return out;
 }
 
-/** Returns an error message, or null if `value` is valid for this placeholder. */
 export function validate(ph, value) {
   const v = (value ?? "").trim();
   if (!v) return "Required";
@@ -66,10 +58,6 @@ function render(ph, value) {
   }
 }
 
-/**
- * Fill placeholders with valid values. Invalid or empty ones are left as
- * "[...]" so the bullet still counts as unfilled and can't be downloaded.
- */
 export function fill(text, values) {
   const phs = parsePlaceholders(text);
   let out = "";

@@ -1,5 +1,3 @@
-"""Generate sample resumes in memory so tests need no binary fixtures."""
-
 from __future__ import annotations
 
 import io
@@ -30,7 +28,6 @@ GOOD_LINES = [
     "Python, C++, JavaScript, TypeScript, React, Node.js, FastAPI, MongoDB, PostgreSQL, Docker, Linux, Git",
 ]
 
-# Padding so the good resume reaches a realistic length.
 GOOD_LINES[3] += " " + " ".join(["Comfortable owning features end to end."] * 30)
 
 
@@ -42,7 +39,6 @@ def good_docx() -> bytes:
 
 
 def bad_docx() -> bytes:
-    """Contact in header, two columns, a skills table, weak bullets, odd headings."""
     doc = Document()
     doc.sections[0].header.paragraphs[0].text = "bad.candidate@example.com | 087 765 4321"
     sect = doc.sections[0]._sectPr
@@ -77,7 +73,6 @@ def good_pdf() -> bytes:
     width, height = A4
     y = height - 50
     for line in GOOD_LINES:
-        # crude wrap so long lines stay on the page
         words, row = line.split(), ""
         for w in words:
             if len(row) + len(w) > 95:
@@ -117,8 +112,6 @@ def _save(doc) -> bytes:
 
 
 def dense_pdf_with_links() -> bytes:
-    """~550-word one-page resume, Helvetica bullets (cid:127), and link annotations
-    under the words "GitHub" and "LinkedIn", like many real resume templates."""
     from reportlab.lib.pagesizes import A4
     from reportlab.pdfgen import canvas
 
@@ -151,7 +144,6 @@ def dense_pdf_with_links() -> bytes:
         y -= size + 3.5
 
     text(*lines[0]); text(*lines[1])
-    # link annotations over the words "GitHub" and "LinkedIn" on the contact line
     from reportlab.pdfbase.pdfmetrics import stringWidth
     contact, cy = lines[1][0], y + 12.5
     for word, url in (("GitHub", "https://github.com/alexm"), ("LinkedIn", "https://linkedin.com/in/alexm")):

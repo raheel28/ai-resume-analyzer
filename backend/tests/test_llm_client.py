@@ -15,8 +15,6 @@ class FakeAPIError(Exception):
 
 
 def make_client(models, script):
-    """GeminiClient without the SDK: `script` maps model -> list of results
-    (an int means 'raise that HTTP status', a str is the response text)."""
     c = object.__new__(GeminiClient)
     c._models, c._retries, c._sleep, c.last_model = models, 1, lambda s: None, None
     c.calls = []

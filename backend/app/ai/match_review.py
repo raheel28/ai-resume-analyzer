@@ -1,5 +1,3 @@
-"""AI review of a resume against a specific job description."""
-
 from __future__ import annotations
 
 from app.jd.lexicon import mentions, skills_in
@@ -54,8 +52,6 @@ def review_match(client: LLMClient, resume_text: str, bullets: list[str], jd: st
     rubric = [c for c in raw.rubric if c.criterion in CRITERIA]
     accepted, rejected = filter_rewrites(raw.rewrites, bullets, resume_text)
 
-    # Requirements the AI spotted that the keyword list doesn't already cover.
-    # "found" is checked here in code, not taken from the model.
     seen = {s.lower() for s in keyword_skills}
     keyword_set = set(keyword_skills)
     extra = []
@@ -63,9 +59,6 @@ def review_match(client: LLMClient, resume_text: str, bullets: list[str], jd: st
         name = req.skill.strip()
         if not name or name.lower() in seen or len(name) > 60:
             continue
-        # The model words skills its own way ("Go (Golang)", "RESTful APIs",
-        # "GitHub Actions / CI/CD"). If every known skill it names is already in
-        # the keyword list, it's a duplicate, not a new requirement.
         named = set(skills_in(name))
         if named and named <= keyword_set:
             continue

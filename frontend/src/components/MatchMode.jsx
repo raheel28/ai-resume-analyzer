@@ -6,7 +6,6 @@ import MatchSummary from "./MatchSummary.jsx";
 import AIReview from "./AIReview.jsx";
 import ApplyPanel from "./ApplyPanel.jsx";
 
-/** Mode 2: compare a resume against a job description, then make changes & download. */
 export default function MatchMode() {
   const [jd, setJd] = useState({ mode: "text", text: "", file: null });
   const [file, setFile] = useState(null);
@@ -48,7 +47,6 @@ export default function MatchMode() {
 
   function handleFile(f) {
     setFile(f);
-    // If the job description is already there, compare straight away.
     if (jdReady(jd)) compare(f);
   }
 

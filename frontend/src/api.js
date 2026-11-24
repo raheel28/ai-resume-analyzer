@@ -10,7 +10,6 @@ export async function analyzeResume(file) {
     try {
       detail = (await res.json()).detail ?? detail;
     } catch {
-      /* non-JSON error body */
     }
     throw new Error(detail);
   }
@@ -28,7 +27,6 @@ export async function aiReview(file, targetRole) {
     try {
       detail = (await res.json()).detail ?? detail;
     } catch {
-      /* non-JSON error body */
     }
     const err = new Error(detail);
     err.status = res.status;
@@ -51,7 +49,6 @@ export async function applyChanges(file, changes, format, keepLayout, addSkills 
     try {
       detail = (await res.json()).detail ?? detail;
     } catch {
-      /* non-JSON error body */
     }
     throw new Error(detail);
   }
@@ -82,7 +79,6 @@ async function postJson(path, body, fallback) {
     try {
       detail = (await res.json()).detail ?? detail;
     } catch {
-      /* non-JSON error body */
     }
     throw new Error(detail);
   }
@@ -92,7 +88,6 @@ async function postJson(path, body, fallback) {
 export const matchResume = (file, jd) => postJson("/api/match", jdForm(file, jd), "Match failed");
 export const aiMatch = (file, jd) => postJson("/api/ai-match", jdForm(file, jd), "AI match review failed");
 
-/** Ping the API. Free hosting sleeps when idle, so the first call can take ~1 minute. */
 export async function health(timeoutMs = 90000) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), timeoutMs);

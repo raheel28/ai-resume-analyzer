@@ -1,8 +1,3 @@
-"""Summarise real usage from data/metrics.jsonl (written by the API on every AI call).
-
-Usage (from backend/):  python -m evals.usage_report [path]
-"""
-
 from __future__ import annotations
 
 import json

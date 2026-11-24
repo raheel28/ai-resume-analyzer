@@ -1,13 +1,3 @@
-"""Server-side checks on AI-suggested rewrites.
-
-LLMs happily "improve" a bullet by inventing a metric ("reduced latency by
-45%") or a technology the candidate never used ("using Kubernetes"). On a
-resume that's lying, so we reject any rewrite that introduces:
-
-  * a number that isn't in the original bullet (placeholders like [X] are fine), or
-  * a technical term / proper noun that appears nowhere in the resume.
-"""
-
 from __future__ import annotations
 
 import re
@@ -15,17 +5,12 @@ from dataclasses import dataclass
 
 PLACEHOLDER_RE = re.compile(r"\[[^\]]{1,20}\]")
 NUMBER_RE = re.compile(r"\d+(?:[.,]\d+)*")
-# Tokens that look like names of things: capitalised mid-sentence, or containing
-# digits / tech punctuation (C++, Node.js, GPT-4, S3).
 TOKEN_RE = re.compile(r"[A-Za-z][A-Za-z0-9+#./-]*")
 
-# Capitalised words that are fine to introduce.
 COMMON_CAPS = {"i", "a", "the", "an", "api", "apis", "ui", "ux", "ci", "cd", "ci/cd", "ml", "ai",
                "llm", "rest", "sql", "json", "http", "end-to-end", "b2b", "b2c", "kpi", "kpis"}
 
 
-# Claims an LLM likes to add that are facts, not wording. Each must already be
-# in the ORIGINAL bullet to appear in the rewrite. (Found by evals/run_guard.py.)
 CLAIM_PATTERNS = {
     "invented quantity": re.compile(
         r"\b(?:two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|fifteen|twenty|thirty|"
@@ -49,7 +34,6 @@ CLAIM_PATTERNS = {
 }
 
 
-# Lowercase parts of a compound that still name a technology.
 TECHISH = {"js", "sql", "db", "api", "aws", "gcp", "ml", "ai"}
 
 
@@ -57,7 +41,7 @@ TECHISH = {"js", "sql", "db", "api", "aws", "gcp", "ml", "ai"}
 class GuardResult:
     ok: bool
     reason: str = ""
-    needs_input: bool = False  # suggestion contains [X] placeholders for the user to fill in
+    needs_input: bool = False
 
 
 def normalise(s: str) -> str:
@@ -87,8 +71,6 @@ HEDGED_NUMBER_RE = re.compile(rf"(?:{HEDGE}\s*(\d+(?:[.,]\d+)*))|(\d+(?:[.,]\d+)
 
 
 def _dropped_hedges(original: str, suggested: str) -> list[str]:
-    """Numbers that were approximate ("about 15%", "20+") in the original but
-    are stated as exact in the rewrite. Same digits, bigger claim."""
     dropped = []
     for m in HEDGED_NUMBER_RE.finditer(original):
         num = (m.group(1) or m.group(2)).replace(",", "")
@@ -100,8 +82,6 @@ def _dropped_hedges(original: str, suggested: str) -> list[str]:
 
 
 def _known_term(term: str, resume_lower: str) -> bool:
-    """A term is fine if it's in the resume. Hyphenated compounds such as
-    "LLM-powered" or "preference-based" are fine if their named parts are."""
     if term in resume_lower:
         return True
     parts = [p for p in re.split(r"[-/]", term) if p]
@@ -134,8 +114,6 @@ def check_rewrite(original: str, suggested: str, resume_text: str) -> GuardResul
     if invented:
         return GuardResult(False, f"term(s) not in your resume: {', '.join(invented)}")
 
-    # Known technologies written in lowercase ("kubernetes", "typescript") slip
-    # past the capitalisation heuristic, so check them against the skill list too.
     from app.jd.lexicon import skills_in
 
     new_tech = sorted(set(skills_in(suggested)) - set(skills_in(resume_text)))

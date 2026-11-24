@@ -1,6 +1,5 @@
 import { useRef } from "react";
 
-/** Job description: paste text or upload a file (.pdf, .docx, .txt). */
 export default function JDInput({ value, onChange, disabled }) {
   const input = useRef(null);
   const mode = value.mode;

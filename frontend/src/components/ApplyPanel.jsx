@@ -17,10 +17,6 @@ function plural(n, word) {
   return `${n} ${word}${n === 1 ? "" : "s"}`;
 }
 
-/**
- * Download panel shared by both modes. Works without the AI: with nothing
- * selected it produces an ATS-clean rebuild of the resume.
- */
 export default function ApplyPanel({ file, selected = [], skills = [] }) {
   const isDocx = file?.name.toLowerCase().endsWith(".docx");
   const [format, setFormat] = useState(isDocx ? "docx" : "pdf");

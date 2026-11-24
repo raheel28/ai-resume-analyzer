@@ -64,12 +64,10 @@ summary { cursor: pointer; }
   .score { width: 140px; }
 }
 
-/* ---- target role field */
 .field { display: grid; gap: 6px; font-size: 0.9rem; }
 .field input { padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font: inherit; }
 .field input:focus { outline: 2px solid var(--ok); border-color: transparent; }
 
-/* ---- AI review */
 h3 { font-size: 0.95rem; margin: 20px 0 8px; }
 .ai-head { display: flex; justify-content: space-between; align-items: center; }
 .ai-head h2 { margin: 0; }
@@ -90,7 +88,6 @@ h3 { font-size: 0.95rem; margin: 20px 0 8px; }
 
 @media (max-width: 560px) { .two-col { grid-template-columns: 1fr; } }
 
-/* ---- editable rewrites + apply */
 .rewrite.selected { border-color: var(--ok); background: #f7faff; }
 .rewrite textarea {
   width: 100%; font: inherit; font-weight: 500; padding: 8px 10px; margin-bottom: 6px;
@@ -111,7 +108,6 @@ button.primary {
 button.primary:disabled { opacity: 0.5; cursor: not-allowed; }
 .success { color: var(--good); }
 
-/* ---- AI loader */
 .ai-loader { display: grid; gap: 10px; margin-top: 8px; }
 .ai-loader p { margin: 0; }
 .ai-loader-row { display: flex; align-items: center; gap: 10px; }
@@ -126,7 +122,6 @@ button.primary:disabled { opacity: 0.5; cursor: not-allowed; }
 @media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 2.4s; } }
 .ai-meta { display: inline-flex; align-items: center; gap: 10px; }
 
-/* ---- mode tabs */
 .tabs { display: inline-flex; gap: 4px; background: #e9ecf1; padding: 4px; border-radius: 10px; margin: 12px 0 8px; }
 .tabs button, .seg button {
   border: none; background: transparent; font: inherit; padding: 8px 14px; border-radius: 7px;
@@ -137,7 +132,6 @@ button.primary:disabled { opacity: 0.5; cursor: not-allowed; }
 .mode[hidden] { display: none; }
 header p { margin: 4px 0 0; }
 
-/* ---- job description input */
 .jd { display: grid; gap: 10px; }
 .jd-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
 .jd-head h2 { margin: 0; }
@@ -150,7 +144,6 @@ header p { margin: 4px 0 0; }
 .jd-file button { border: 1px solid var(--border); background: #fff; border-radius: 8px; padding: 8px 14px; font: inherit; cursor: pointer; }
 button.link { border: none !important; background: none !important; color: var(--bad); padding: 0 !important; text-decoration: underline; }
 
-/* ---- match skills table */
 .skills { list-style: none; padding: 0; margin: 0; display: grid; gap: 2px; }
 .skill { display: grid; grid-template-columns: 20px 1fr auto; gap: 4px 10px; align-items: center; padding: 7px 0; border-top: 1px solid var(--border); font-size: 0.92rem; }
 .skill:first-child { border-top: none; }
@@ -163,11 +156,9 @@ button.link { border: none !important; background: none !important; color: var(-
 .skill.found .tag { background: #e3f4ec; color: var(--good); }
 .add-skill { grid-column: 2 / -1; font-size: 0.8rem; color: var(--muted); }
 
-/* ---- apply panel as its own card */
 section.apply { margin-top: 0; border-top: 1px solid var(--border); }
 section.apply h2 { margin: 0; }
 
-/* ---- typed placeholder inputs */
 .ph-box { background: #fffaf0; border: 1px solid #f5d9a8; border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; display: grid; gap: 8px; }
 .ph-box p { margin: 0; }
 .ph-grid { display: flex; flex-wrap: wrap; gap: 10px 16px; }
@@ -183,6 +174,5 @@ section.apply h2 { margin: 0; }
 .rewrite button:disabled { opacity: 0.5; cursor: not-allowed; }
 .check input:disabled + * , .check:has(input:disabled) { color: var(--muted); cursor: not-allowed; }
 
-/* ---- server wake-up banner */
 .banner.server { display: flex; align-items: center; gap: 10px; }
 .banner.server.error { background: #fee4e2; border-color: #f4b8b0; color: var(--bad); }

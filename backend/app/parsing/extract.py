@@ -1,10 +1,3 @@
-"""Turn an uploaded PDF or DOCX into plain text plus layout signals.
-
-Layout signals (tables, images, columns, header/footer text) matter because
-many ATS parsers read documents top-to-bottom as plain text and mangle
-anything that isn't a simple single-column flow.
-"""
-
 from __future__ import annotations
 
 import io
@@ -22,16 +15,16 @@ class UnsupportedFileError(ValueError):
 
 @dataclass
 class ExtractedDocument:
-    file_type: str  # "pdf" | "docx"
+    file_type: str
     text: str
     lines: list[str]
-    page_count: int | None = None  # None for DOCX (not knowable without rendering)
+    page_count: int | None = None
     table_count: int = 0
     image_count: int = 0
     multi_column: bool = False
     header_footer_text: str = ""
-    undecodable_glyphs: int = 0  # "(cid:N)" characters the PDF font couldn't map to text
-    links: list[dict] = field(default_factory=list)  # [{"text": anchor text, "url": target}]
+    undecodable_glyphs: int = 0
+    links: list[dict] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
 
     @property
@@ -61,14 +54,6 @@ DATE_HINT_RE = re.compile(r"\b(19|20)\d{2}\b|\bpresent\b", re.I)
 
 
 def merge_wrapped_bullets(lines: list[str]) -> list[str]:
-    """PDF text comes out one visual line at a time, so a bullet that wraps
-    onto a second line is split in two. Join continuation lines back onto
-    their bullet.
-
-    A line is treated as a continuation when the previous line is (part of) a
-    bullet and the line doesn't start a new bullet, isn't a heading, and either
-    starts lowercase or follows a line with no closing full stop and has no
-    date in it (job title / date lines have dates)."""
     out: list[str] = []
     in_bullet = False
     for ln in lines:
@@ -91,13 +76,9 @@ def merge_wrapped_bullets(lines: list[str]) -> list[str]:
 
 
 def _fix_cid(text: str) -> str:
-    """pdfplumber emits "(cid:127)" for glyphs with no text mapping. At the start
-    of a line it's almost always a bullet symbol; elsewhere drop it."""
     lines = [LEADING_CID_RE.sub("• ", ln) for ln in text.splitlines()]
     return CID_RE.sub("", "\n".join(lines))
 
-
-# ---------------------------------------------------------------- PDF
 
 def _extract_pdf(data: bytes) -> ExtractedDocument:
     texts: list[str] = []
@@ -139,8 +120,6 @@ def _extract_pdf(data: bytes) -> ExtractedDocument:
 
 
 def _pdf_links(page) -> list[dict]:
-    """Link annotations with the text underneath them. Characters are matched by
-    their centre point because link boxes are often slightly smaller than the text."""
     out = []
     for h in page.hyperlinks:
         url = h.get("uri")
@@ -158,8 +137,6 @@ def _pdf_links(page) -> list[dict]:
             text = page.filter(inside).extract_text() or ""
         except Exception:
             text = ""
-        # Link boxes often clip a letter or catch the "|" separator next to the word;
-        # trim separators here, and render.py snaps the anchor to whole words.
         text = _fix_cid(" ".join(text.split())).strip(" •|·,;:/")
         out.append({"text": text, "url": url})
     return out
@@ -176,8 +153,6 @@ def _dedupe_links(links: list[dict]) -> list[dict]:
 
 
 def _pdf_page_looks_multicolumn(page) -> bool:
-    """Heuristic: in a two-column layout, many text lines have a wide gap
-    near the middle of the page between two runs of words."""
     words = page.extract_words(keep_blank_chars=False, use_text_flow=False)
     if len(words) < 40:
         return False
@@ -198,29 +173,22 @@ def _pdf_page_looks_multicolumn(page) -> bool:
                 split_rows += 1
                 break
 
-    # Right-aligned dates ("Jan 2024 – Present") create gaps too, but at the
-    # far right; requiring the second run to start in the middle band filters
-    # most of them out.
     return split_rows / max(len(rows), 1) > 0.3
 
-
-# ---------------------------------------------------------------- DOCX
 
 def _extract_docx(data: bytes) -> ExtractedDocument:
     try:
         document = Document(io.BytesIO(data))
-    except Exception as exc:  # python-docx raises several types for bad files
+    except Exception as exc:
         raise UnsupportedFileError("Could not open this .docx file") from exc
 
     lines = [p.text for p in document.paragraphs]
 
-    # Text inside tables is often skipped or scrambled by ATS, but we still
-    # want it for analysis, so include it and flag the table separately.
     for table in document.tables:
         for row in table.rows:
             cells = []
             for cell in row.cells:
-                if cell.text.strip() and cell.text not in cells:  # merged cells repeat
+                if cell.text.strip() and cell.text not in cells:
                     cells.append(cell.text)
             lines.append(" | ".join(cells))
 

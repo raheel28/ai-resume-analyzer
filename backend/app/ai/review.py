@@ -1,5 +1,3 @@
-"""AI review: rubric rating, strengths/improvements, and guarded bullet rewrites."""
-
 from __future__ import annotations
 
 from app.llm.client import LLMClient
@@ -42,7 +40,6 @@ def build_prompt(resume_text: str, target_role: str | None) -> str:
 
 
 def filter_rewrites(rewrites, bullets: list[str], resume_text: str) -> tuple[list, list]:
-    """Keep only rewrites whose original is really in the resume and that pass the guard."""
     known_bullets = {normalise(b): b for b in bullets}
     accepted, rejected = [], []
     for rw in rewrites[:MAX_REWRITES]:
@@ -81,7 +78,7 @@ def review_resume(client: LLMClient, resume_text: str, bullets: list[str],
         "strengths": raw.strengths[:3],
         "improvements": raw.improvements[:4],
         "rewrites": accepted,
-        "rejected_rewrites": rejected,  # shown in dev / debugging, useful for evals
+        "rejected_rewrites": rejected,
         "target_role": target_role or None,
         "model": getattr(client, "last_model", None),
     }

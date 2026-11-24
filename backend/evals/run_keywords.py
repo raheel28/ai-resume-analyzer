@@ -1,12 +1,3 @@
-"""Evaluate rule-based skill extraction from job descriptions on hand-labelled ads.
-
-  precision = extracted skills that are really asked for / all extracted
-  recall    = asked-for skills extracted / all asked-for skills
-  importance accuracy = required vs nice-to-have correct, on correctly found skills
-
-Usage (from backend/):  python -m evals.run_keywords [--show-errors]
-"""
-
 from __future__ import annotations
 
 import argparse

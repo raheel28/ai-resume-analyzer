@@ -1,5 +1,7 @@
 # AI Resume Analyzer
 
+**Live demo:** https://ai-resume-analyzer-tau-mocha-61.vercel.app
+
 Two modes, both ending in **make changes → download the updated resume**:
 
 1. **Resume check:** ATS-readiness score with specific fixes, plus an AI review with
@@ -7,18 +9,6 @@ Two modes, both ending in **make changes → download the updated resume**:
 2. **Match to a job:** paste a job description or upload it as a file. You get a keyword
    match score (which required and nice-to-have skills you show or are missing), an AI fit
    review, rewrites tailored to the job, and tick boxes to add missing skills you really have.
-
-## Status
-
-| Milestone | What | Status |
-|---|---|---|
-| 1 | Parse PDF/DOCX, rule-based ATS check, upload UI | ✅ done |
-| 2 | AI review: rubric rating, strengths/improvements, guarded bullet rewrites | ✅ done |
-| 3 | Apply selected edits + download (DOCX in place, or rebuilt ATS DOCX/PDF) | ✅ done |
-| 4 | Job description match: keyword score, AI fit review, tailored rewrites, add missing skills | ✅ done |
-| 5 | Evals (guard + keyword matcher), usage metrics, CI, deploy config, one-page export with links | ✅ done |
-| 6 | Semantic (embedding) skill matching; more eval data from real resumes | next |
-| 6 | Deploy (backend: Render/Railway, frontend: Vercel) | |
 
 ## Run it
 
